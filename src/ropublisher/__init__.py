@@ -11,7 +11,7 @@ from mutagen.mp3 import MP3
 from mutagen.oggvorbis import OggVorbis
 
 OpenCloudAssetTypeName = Literal["Audio", "Decal", "Model"]
-OpenCloudAssetTypeValue = Literal[1,2,3]
+# OpenCloudAssetTypeValue = Literal[1,2,3]
 HttpMethod = Literal["POST", "GET", "PATCH", "DELETE"]
 
 LEGACY_AUDIO_URL = "https://publish.roblox.com/v1/audio"
@@ -23,11 +23,11 @@ LEGACY_MESH_URL = "https://data.roblox.com/data/upload/json?assetTypeId=35"
 LEGACY_MESH_URL = "https://data.roblox.com/data/upload/json?assetTypeId=35"
 ASSET_URL = "https://apis.roblox.com/assets/v1/assets"
 
-ASSET_TYPE: dict[OpenCloudAssetTypeName, OpenCloudAssetTypeValue] = {
-	"Audio": 1,
-	"Decal": 2,
-	"Model": 3,
-}
+# ASSET_TYPE: dict[OpenCloudAssetTypeName, OpenCloudAssetTypeValue] = {
+# 	"Audio": 1,
+# 	"Decal": 2,
+# 	"Model": 3,
+# }
 
 LIMITS = {
 	"Audio": {
@@ -84,7 +84,7 @@ class OpenCloudAssetInfo(TypedDict):
 class OpenCloudCreationAsset(OpenCloudAssetInfo):
 	description: str
 	displayName: str
-	assetType: OpenCloudAssetTypeValue
+	assetType: OpenCloudAssetTypeName
 	creationContext: OpenCloudCreationContext
 
 class OpenCloudUpdateAsset(OpenCloudAssetInfo):
@@ -186,7 +186,7 @@ class Publisher():
 		assert file_type and asset_type, f"bad file type for {file_path}"
 
 		request_payload : OpenCloudCreationAsset = {
-			"assetType": ASSET_TYPE[asset_type],
+			"assetType": asset_type,
 			"displayName": name,
 			"description": description,
 			"creationContext": {},
@@ -219,11 +219,13 @@ class Publisher():
 			data=data,
 		)
 
-		print(response)
-		print(response.text)
+		# print(response)
+		# print(response.text)
 		content_data = json.loads(response.text)
-		return content_data["path"].replace("operations/", "")
-
+		if "path" in content_data:
+			return content_data["path"].replace("operations/", "")
+		else:
+			raise ValueError(f"bad response {content_data}")
 	def _token_authorized_request(self, method: HttpMethod, url: str, **kwargs) -> Response | None:
 
 		response = self.session.request(method, url, **kwargs)
@@ -237,7 +239,7 @@ class Publisher():
 		return None
 
 	def update_place(self, file_path: str, place_id: str):
-		print(f"posting place {file_path} to {place_id}")
+		# print(f"posting place {file_path} to {place_id}")
 		universe_id = self.get_universe_id_from_place_id(place_id)
 
 		post_url = f"https://apis.roblox.com/universes/v1/{universe_id}/places/{place_id}/versions?versionType=Published"
@@ -249,10 +251,10 @@ class Publisher():
 				"x-api-key": self.place_key,
 			}
 		)
-		print(x.text)
+		# print(x.text)
 
 
-	def post_decal(self, file_path: str, name: str | None = None, publish_to_group=True, description: str | None = None) -> int | None:
+	def post_image(self, file_path: str, name: str | None = None, publish_to_group=True, description: str | None = None) -> int | None:
 		if not name:
 			name = _get_name_from_path(file_path)
 
@@ -288,7 +290,7 @@ class Publisher():
 
 	# might be broken
 	def legacy_publish_decal(self, file_path: str, name: str | None = None, publish_to_group=True) -> int | None:	
-		print("posting decal: "+file_path)
+		# print("posting decal: "+file_path)
 
 		if not name:
 			name = _get_name_from_path(file_path)
@@ -322,7 +324,7 @@ class Publisher():
 
 
 	def legacy_publish_audio(self, file_path: str, name: str | None = None, publish_to_group=True) -> int | None:	
-		print("posting audio: "+file_path)
+		# print("posting audio: "+file_path)
 
 		if not name:
 			name = os.path.splitext(str(os.path.basename(file_path)))[0]
