@@ -158,16 +158,20 @@ class Publisher():
 				"x-api-key": self.asset_key,
 			}
 		)
-		content_data = json.loads(response.text)
+		
+		try:
+			content_data = json.loads(response.text)
 
-		if "response" in content_data:
-			response_data = content_data["response"]
-			if "assetId" in response_data:
-				return int(response_data["assetId"])
+			if "response" in content_data:
+				response_data = content_data["response"]
+				if "assetId" in response_data:
+					return int(response_data["assetId"])
+				else:
+					return None
 			else:
 				return None
-		else:
-			return None
+		except:
+			raise ValueError(f"request failed: {response.text}")
 
 	def _creation_request(self, file_path: str, name: str, description: str, publish_to_group=True) -> str:
 
@@ -221,11 +225,14 @@ class Publisher():
 
 		# print(response)
 		# print(response.text)
-		content_data = json.loads(response.text)
-		if "path" in content_data:
-			return content_data["path"].replace("operations/", "")
-		else:
-			raise ValueError(f"bad response {content_data}")
+		try:
+			content_data = json.loads(response.text)
+			if "path" in content_data:
+				return content_data["path"].replace("operations/", "")
+			else:
+				raise ValueError(f"bad response {content_data}")
+		except:
+			raise ValueError(f"request failed: {response.text}")
 	def _token_authorized_request(self, method: HttpMethod, url: str, **kwargs) -> Response | None:
 
 		response = self.session.request(method, url, **kwargs)
