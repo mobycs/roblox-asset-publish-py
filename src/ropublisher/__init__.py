@@ -56,6 +56,8 @@ OPEN_CONTENT_CLOUD_TYPE = {
 	},	
 	"Model": {
 		".fbx": "model/fbx",
+		".rbxm": "model/rbxm",
+		".rmbxmx": "model/rbxmx",
 	},	
 }
 
